@@ -1,8 +1,10 @@
 import config
 import requests
 import smtplib
+import threading
 from datetime import datetime
 
+ALERT_CHECK_INTERVAL = 60
 MY_EMAIL = config.email
 MY_PASSWORD = config.password
 SMTP_SERVER = config.smtp_server
@@ -56,10 +58,15 @@ def is_dark():
 
     return not local_sunrise_time <= current_local_time < local_sunset_time
 
-# BONUS: run the code every 60 seconds.
 def iss_overhead_alert():
     if iss_is_overhead(get_current_iss_position()) and is_dark():
+        print("ISS is overhead - sending alert!")
         send_email_alert()
+    else:
+        print("ISS is NOT overhead")
+
+    # check every minute
+    threading.Timer(ALERT_CHECK_INTERVAL, iss_overhead_alert).start()
 
 iss_overhead_alert()
 
