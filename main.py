@@ -1,6 +1,12 @@
 import config
 import requests
+import smtplib
 from datetime import datetime
+
+MY_EMAIL = config.email
+MY_PASSWORD = config.password
+SMTP_SERVER = config.smtp_server
+RECIPIENT_EMAIL = config.recipient_email
 
 MY_LAT = config.latitude
 MY_LONG = config.longitude
@@ -27,6 +33,16 @@ def iss_is_overhead(iss_position):
         return True
     return False
 
+def send_email_alert():
+    with smtplib.SMTP(SMTP_SERVER) as connection:
+        connection.starttls()
+        connection.login(user=MY_EMAIL, password=MY_PASSWORD)
+        connection.sendmail(
+            from_addr=MY_EMAIL
+            , to_addrs=RECIPIENT_EMAIL
+            , msg="Subject: ISS is overhead NOW!"
+        )
+
 def is_dark():
     """Returns a boolean representing whether or not it is currently dark in the user's locality"""
     current_local_time = datetime.now().hour
@@ -41,13 +57,9 @@ def is_dark():
     return not local_sunrise_time <= current_local_time < local_sunset_time
 
 # BONUS: run the code every 60 seconds.
-#If the ISS is close to my current position
 def iss_overhead_alert():
     if iss_is_overhead(get_current_iss_position()) and is_dark():
-        # Then send me an email to tell me to look up.
-        print("Overhead!")
-    else:
-        print("Not overhead!")
+        send_email_alert()
 
 iss_overhead_alert()
 
