@@ -1,0 +1,2 @@
+latitude = 50.1
+longitude = -50.1
